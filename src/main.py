@@ -53,7 +53,16 @@ class GUI(QtWidgets.QMainWindow):
 class tagger():
      
     def __init__(self, path):
-        pass
+        # check to make sure directory exists and is valid
+        if not os.path.isdir(path):
+            IO.error("Tagger must be used with a directory, not a file")
+        if not os.path.exists(path):
+            IO.error("Directory does not exist")
+        # get directory subfiles
+        self.path = path
+
+    def returnList(self):
+        print('hello')
 
 class image():
      
@@ -118,8 +127,10 @@ class image():
         textFile.write(tag)
 
 if __name__ == '__main__':
-    test = image("")    
+    test = image("/Users/Shared/TestingFolder/download 1.JPG")    
     
+    test2 = tagger("/Users/Shared/TestingFolder/download 1.JPG").returnList()
+
     IO.info("")
     IO.info("Running Test A: ")
     test.addTag("test")
