@@ -3,6 +3,7 @@ import sys
 import typing
 
 import ansicolor
+from PIL import Image
 
 import PyQt6
 from PyQt6 import QtWidgets, QtCore, QtGui
@@ -17,6 +18,9 @@ from PyQt6.QtWidgets import (
     QStatusBar,
     QWidget
 )
+
+def splitTagsString(tags = ""):
+    return(tags.replace(', ', ',').split(','))
 
 class IO(object):
     @classmethod
@@ -60,9 +64,19 @@ class tagger():
             IO.error("Directory does not exist")
         # get directory subfiles
         self.path = path
+        self.images = self.returnImages()
 
-    def returnList(self):
-        print('hello')
+    def returnImages(self):
+        imageList = []
+        for x in os.listdir(self.path):
+            imagePath = os.path.join(self.path, x)
+            try:
+                Image.open(imagePath)
+            except:
+                continue
+            IO.info(str(x))
+            imageList.append(image(imagePath))
+        return(imageList)
 
 class image():
      
@@ -94,7 +108,7 @@ class image():
         if os.path.exists(self.tagFile):
             with open(self.tagFile, 'r') as tf:
                 tags = tf.read()
-        return(tags.split(', '))
+        return(splitTagsString(tags))
     
     def addTag(self, tag = "", insertAtStart = False):
         # adds a string tag to either the front or end of the file
@@ -103,7 +117,7 @@ class image():
         if not tag:
             return()
 
-        newtags = tag.split(', ')
+        newtags = splitTagsString(tag)
         currentTags = self.returnTags()
         
         if not currentTags[0] == '':
@@ -127,35 +141,9 @@ class image():
         textFile.write(tag)
 
 if __name__ == '__main__':
-    test = image("/Users/Shared/TestingFolder/download 1.JPG")    
-    
-    test2 = tagger("/Users/Shared/TestingFolder/download 1.JPG").returnList()
-
-    IO.info("")
-    IO.info("Running Test A: ")
-    test.addTag("test")
-    test.addTag("after test")
-    test.addTag("before test", True)
-    IO.info(test.returnTags())
-
-    if test.returnTags() == ['before test', 'test', 'after test']:
-        IO.info("Test A Passed")
-    else:
-        IO.error("Test A Failed")
-
-    IO.info("")
-    IO.info("Running Test B: ")
-    test.setTags(['new before', 'new test', 'new after'])
-    IO.info(test.returnTags())
-    if test.returnTags() == ['new before', 'new test', 'new after']:
-        IO.info("Test B Passed")
-    else:
-        IO.error("Test B Failed")
-
-
-    '''
-    app = QApplication(sys.argv)
-	gui = GUI()
-	gui.show()
-	sys.exit(app.exec())
-    '''
+        test2 = tagger("/Users/Shared/TestingFolder/")
+        for x in test2.images:
+            x.addTag("tag", True)
+        
+        for x in test2.images:
+            IO.info("{}".format(x.returnTags()))
