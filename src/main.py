@@ -118,9 +118,10 @@ class image():
         textFile.write(tag)
 
 if __name__ == '__main__':
-    test = image("/Users/grettaklu/Desktop/profileEmi--1.jpg")    
+    test = image("")    
     
-    IO.info("running test A: ")
+    IO.info("")
+    IO.info("Running Test A: ")
     test.addTag("test")
     test.addTag("after test")
     test.addTag("before test", True)
@@ -131,6 +132,7 @@ if __name__ == '__main__':
     else:
         IO.error("Test A Failed")
 
+    IO.info("")
     IO.info("Running Test B: ")
     test.setTags(['new before', 'new test', 'new after'])
     IO.info(test.returnTags())
