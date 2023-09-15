@@ -2,6 +2,8 @@ import os
 import sys
 import typing
 
+import ansicolor
+
 import PyQt6
 from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import QEvent, QObject, Qt, pyqtSignal, QPoint
@@ -16,6 +18,18 @@ from PyQt6.QtWidgets import (
     QWidget
 )
 
+class IO(object):
+    @classmethod
+    def warning(cls, message):
+        print('WARNING: {}'.format(ansicolor.yellow(str(message))))
+    
+    @classmethod
+    def error(cls, message):
+        print('ERROR: {}'.format(ansicolor.red(str(message))))
+    
+    @classmethod
+    def info(cls, message):
+        print('INFO: {}'.format(ansicolor.green(str(message))))
 
 class GUI(QtWidgets.QMainWindow):
 
@@ -38,29 +52,35 @@ class GUI(QtWidgets.QMainWindow):
 
 class tagger():
      
-     def __init__(self):
-          pass
+    def __init__(self, path):
+        pass
 
 class image():
      
     def __init__(self, path):
-        
-
+        # path | str
+        # check if the file path is valid
         if os.path.exists(path) == False:
             raise Exception("image file does not exist")
         
+        # get file path and derive the tag path
         self.imagePath = path
         self.tagFile = "{}.txt".format(os.path.splitext(self.imagePath)[0])
-        self.hasTagFolder = os.path.exists(self.tagFile)
-        print (self.imagePath)
-        print (self.tagFile)
-        print (self.hasTagFolder)
+
+        # check for tag file and create one if it's missing
+        if not os.path.exists(self.tagFile):
+            IO.warning("{} does not have a tag file, creating...".format(os.path.basename(self.imagePath)))
+            self.createTagFile()
+        
+        # log both the image and tag file paths
+        IO.info(self.imagePath)
+        IO.info(self.tagFile)
     
     def createTagFile(self):
-        with open(self.tagFile, 'w') as fp:
-            pass
+        open(self.tagFile, 'w')
     
     def returnTags(self):
+        # returns a list of tags split by ", "
         tags = ""
         if os.path.exists(self.tagFile):
             with open(self.tagFile, 'r') as tf:
@@ -68,6 +88,9 @@ class image():
         return(tags.split(', '))
     
     def addTag(self, tag = "", insertAtStart = False):
+        # adds a string tag to either the front or end of the file
+        # tag | str
+        # insertAtStart | Bool
         if not tag:
             return()
 
@@ -87,21 +110,36 @@ class image():
         textFile.write(tagsAsString)
     
     def setTags(self, tag = []):
+        # overrides the existing tags given a list input
+        # tag | list
         seperator = ', '
         tag = seperator.join(tag)
         textFile = open(self.tagFile, 'w')
         textFile.write(tag)
 
 if __name__ == '__main__':
-    test = image("/Users/grettaklu/Desktop/profileEmi--1.jpg")
-    test.createTagFile()
+    test = image("/Users/grettaklu/Desktop/profileEmi--1.jpg")    
+    
+    IO.info("running test A: ")
     test.addTag("test")
     test.addTag("after test")
     test.addTag("before test", True)
-    print (test.returnTags())
+    IO.info(test.returnTags())
+
+    if test.returnTags() == ['before test', 'test', 'after test']:
+        IO.info("Test A Passed")
+    else:
+        IO.error("Test A Failed")
+
+    IO.info("Running Test B: ")
     test.setTags(['new before', 'new test', 'new after'])
-    print (test.returnTags())
-    
+    IO.info(test.returnTags())
+    if test.returnTags() == ['new before', 'new test', 'new after']:
+        IO.info("Test B Passed")
+    else:
+        IO.error("Test B Failed")
+
+
     '''
     app = QApplication(sys.argv)
 	gui = GUI()
