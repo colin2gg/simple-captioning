@@ -37,10 +37,10 @@ class IO(object):
 
 class GUI(QtWidgets.QMainWindow):
 
-    def __init__(self, parent = None    ):
+    def __init__(self, parent = None):
         super(GUI, self).__init__(parent)
 
-        self.setWindowTitle('Image Caption')
+        self.setWindowTitle('Simple Captions')
 
         self.menuDict = self.buildTopBar()
         
@@ -51,22 +51,47 @@ class GUI(QtWidgets.QMainWindow):
         return({
              "Menu":menu,
              "FileMenu":fileMenu,
-             "openFolder":openFolder
+             "OpenFolder":openFolder
                 })
 
-class tagger():
+class imageBar(QtWidgets.QWidget):
+
+    def __init__(self, parent = None, image = None):
+        super(imageBar, self).__init__(parent)
+        
+        self.imageClass = image
+        self.hLayout = QtWidgets.QHBoxLayout()
+        self.setLayout(self.hLayout)
+
+        self.imageTitle = QtWidgets.QLabel("{} image".format(os.path.basename(self.imageClass.imagePath)))
+
+        self.thumbnailBox = QtWidgets.QPushButton()
+
+        self.tagEdit = QtWidgets.QTextEdit(self.imageClass.returnTagsAsText())
+        self.tagEdit.textChanged.connect(self.test)
+
+        self.hLayout.addChildWidget(self.imageTitle)
+        #self.hLayout.addChildWidget(self.thumbnailBox)
+        self.hLayout.addChildWidget(self.tagEdit)
+        self.imageTitle.setBaseSize(256,256)
+        IO.info(self.imageTitle.size())
+    
+    def test(self):
+        IO.info("ahhh")
+
+class imageDirectory():
      
     def __init__(self, path):
         # check to make sure directory exists and is valid
         if not os.path.isdir(path):
-            IO.error("Tagger must be used with a directory, not a file")
+            IO.error("Image Directory must be used with a directory, not a file")
         if not os.path.exists(path):
             IO.error("Directory does not exist")
         # get directory subfiles
         self.path = path
-        self.images = self.returnImages()
+        self.images = self.createImages()
 
-    def returnImages(self):
+    def createImages(self):
         imageList = []
         for x in os.listdir(self.path):
             imagePath = os.path.join(self.path, x)
@@ -77,6 +102,8 @@ class tagger():
             IO.info(str(x))
             imageList.append(image(imagePath))
         return(imageList)
+    
+
 
 class image():
      
@@ -110,6 +137,14 @@ class image():
                 tags = tf.read()
         return(splitTagsString(tags))
     
+    def returnTagsAsText(self):
+        # returns a list of tags split by ", "
+        tags = ""
+        if os.path.exists(self.tagFile):
+            with open(self.tagFile, 'r') as tf:
+                tags = tf.read()
+        return(tags)
+    
     def addTag(self, tag = "", insertAtStart = False):
         # adds a string tag to either the front or end of the file
         # tag | str
@@ -141,9 +176,18 @@ class image():
         textFile.write(tag)
 
 if __name__ == '__main__':
-        test2 = tagger("/Users/Shared/TestingFolder/")
+        
+    '''
+        test2 = imageDirectory("/Users/Shared/TestingFolder/")
         for x in test2.images:
             x.addTag("tag", True)
         
         for x in test2.images:
             IO.info("{}".format(x.returnTags()))
+    '''
+
+    newImage = image('/Users/Shared/TestingFolder/download 1.JPG')
+    app = QApplication(sys.argv)
+    newWidget = imageBar(image = newImage)
+    newWidget.show()
+    sys.exit(app.exec())
